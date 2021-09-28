@@ -36,7 +36,7 @@ fun NavGraph(
         }
         composable(NavigationScreens.SORT.route){
             Scaffold() {
-                Text(text = "SORT")
+                SortScreen(viewModel,navController)
             }
         }
     }

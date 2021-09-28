@@ -26,8 +26,8 @@ const val TAG = "PopularScreen"
 
 @Composable
 fun PopularScreen(viewModel: CurrencyViewModel, navHostController: NavHostController) {
-    val currentList by remember { mutableStateOf(viewModel.mockList) }
-    CurrencyScreen(currentList, currentList,
+    val list = viewModel.currencyList.collectAsState()
+    CurrencyScreen(list.value, list.value,
         onSort = {
             navHostController.navigate(NavigationScreens.SORT.route)
         }, onAddFav = { id->
@@ -41,9 +41,9 @@ fun PopularScreen(viewModel: CurrencyViewModel, navHostController: NavHostContro
 
 @Composable
 fun FavoriteScreen(viewModel: CurrencyViewModel, navHostController: NavHostController) {
-    val currentList by remember { mutableStateOf(viewModel.mockList) }
+    val list = viewModel.currencyList.collectAsState()
     CurrencyScreen(
-        currentList, currentList.filter { it.fav },
+        list.value, list.value.filter { it.fav },
         onSort = {
             navHostController.navigate(NavigationScreens.SORT.route)
         },
