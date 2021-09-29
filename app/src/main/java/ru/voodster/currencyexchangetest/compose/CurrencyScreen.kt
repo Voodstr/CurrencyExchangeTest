@@ -17,63 +17,48 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.voodster.currencyexchangetest.CurrencyViewModel
 import ru.voodster.currencyexchangetest.model.CurrencyModel
 import ru.voodster.currencyexchangetest.ui.theme.CurrencyExchangeTestTheme
 
-const val TAG = "PopularScreen"
-
-
-@Composable
-fun PopularScreen(viewModel: CurrencyViewModel, navHostController: NavHostController) {
-    val list = viewModel.currencyList.collectAsState()
-    CurrencyScreen(list.value, list.value,
-        onSort = {
-            navHostController.navigate(NavigationScreens.SORT.route)
-        }, onAddFav = { id->
-            viewModel.changeFav(id)
-        }, onSelectBaseCurrency = {id->
-            viewModel.setBase(id)
-        },
-        viewModel.base.id
-    )
-}
+const val TAG = "CurrencyScreen"
 
 @Composable
-fun FavoriteScreen(viewModel: CurrencyViewModel, navHostController: NavHostController) {
+fun MainScreen(viewModel: CurrencyViewModel, navHostController: NavHostController,favoriteScreen: Boolean) {
     val list = viewModel.currencyList.collectAsState()
     CurrencyScreen(
-        list.value, list.value.filter { it.fav },
+        viewModel.currencySymbols, if(favoriteScreen){list.value.filter { it.fav }}else list.value,
         onSort = {
             navHostController.navigate(NavigationScreens.SORT.route)
         },
-        onAddFav = {id->
+        onAddFav = { id ->
             viewModel.changeFav(id)
         },
-        onSelectBaseCurrency = {id->
+        onSelectBaseCurrency = { id ->
             viewModel.setBase(id)
         },
-        viewModel.base.id
+        viewModel.base.id,
+        onRefresh = { viewModel.refresh() },
+        isRefreshing = viewModel.refreshState
     )
 }
 
 
 @Composable
 fun CurrencyScreen(
-    currencyList: List<CurrencyModel>, contentList: List<CurrencyModel>,
+    currencyList: List<String>, contentList: List<CurrencyModel>,
     onSort: () -> Unit, onAddFav: (id: Int) -> Unit,
-    onSelectBaseCurrency: (id: Int) -> Unit, baseCurrencyId: Int
+    onSelectBaseCurrency: (id: Int) -> Unit, baseCurrencyId: Int,
+    onRefresh: () -> Unit, isRefreshing: Boolean
 ) {
-    var sortedList by remember { mutableStateOf(contentList) }
     Scaffold(Modifier.fillMaxSize(), backgroundColor = MaterialTheme.colors.background,
         topBar = {
             TopBar(
                 list = currencyList, baseCurrencyId = baseCurrencyId,
-                onSelectCurrency = { model ->
-                    sortedList = contentList.map {
-                        CurrencyModel(it.name, it.value / model.value, it.fav, it.id)
-                    }
-                    onSelectBaseCurrency(model.id)
+                onSelectCurrency = { id ->
+                    onSelectBaseCurrency(id)
                 },
                 onSort = {
                     onSort()
@@ -86,16 +71,27 @@ fun CurrencyScreen(
                 .fillMaxSize()
                 .padding(10.dp)
         ) {
-            CurrencyList(list = sortedList, onClickFav = { onAddFav(it) })
+            CurrencyList(
+                list = contentList, onClickFav = { onAddFav(it) },
+                onRefresh = { onRefresh() }, refresh = isRefreshing
+            )
         }
     }
 }
 
 @Composable
-fun CurrencyList(list: List<CurrencyModel>, onClickFav: (id: Int) -> Unit) {
-    LazyColumn(Modifier.fillMaxWidth()) {
-        list.forEach {
-            item { CurrencyItem(model = it, onAddFav = { onClickFav(it.id) }) }
+fun CurrencyList(
+    list: List<CurrencyModel>, onClickFav: (id: Int) -> Unit,
+    refresh: Boolean, onRefresh: () -> Unit
+) {
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = refresh),
+        onRefresh = { onRefresh() })
+    {
+        LazyColumn(Modifier.fillMaxWidth()) {
+            list.forEach {
+                item { CurrencyItem(model = it, onAddFav = { onClickFav(it.id) }) }
+            }
         }
     }
 }
@@ -138,9 +134,9 @@ fun ClickFavIcon(fav: Boolean, onAddFav: () -> Unit) {
 
 @Composable
 fun TopBar(
-    list: List<CurrencyModel>,
+    list: List<String>,
     baseCurrencyId: Int,
-    onSelectCurrency: (model: CurrencyModel) -> Unit,
+    onSelectCurrency: (id: Int) -> Unit,
     onSort: () -> Unit
 ) {
     TopAppBar(backgroundColor = MaterialTheme.colors.primaryVariant) {
@@ -155,12 +151,12 @@ fun TopBar(
 
 @Composable
 fun CurrencySelector(
-    list: List<CurrencyModel>,
-    onSelect: (model: CurrencyModel) -> Unit,
+    list: List<String>,
+    onSelect: (id: Int) -> Unit,
     baseCurrencyId: Int
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedString by remember { mutableStateOf(list[baseCurrencyId].name) }
+    var selectedString by remember { mutableStateOf(list[baseCurrencyId]) }
     Row(
         Modifier
             .clickable { // Anchor view
@@ -170,11 +166,11 @@ fun CurrencySelector(
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             list.forEach {
                 DropdownMenuItem(onClick = {
-                    selectedString = it.name
-                    onSelect(it)
+                    selectedString = it
+                    onSelect(list.indexOf(it))
                     expanded = false
                 }) {
-                    SelectableItem(name = it.name)
+                    SelectableItem(name = it)
                 }
             }
         }
@@ -194,12 +190,14 @@ fun CurrencyScreenPreview() {
     val viewModel = CurrencyViewModel()
     CurrencyExchangeTestTheme {
         CurrencyScreen(
-            viewModel.mockList,
-            viewModel.mockList,
+            viewModel.currencySymbols,
+            viewModel.showedList,
             onSort = {},
             onAddFav = {},
             onSelectBaseCurrency = {},
-            baseCurrencyId = 0
+            baseCurrencyId = 0,
+            onRefresh = {},
+            isRefreshing = false
         )
     }
 }

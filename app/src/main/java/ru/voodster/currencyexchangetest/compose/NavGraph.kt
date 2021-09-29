@@ -26,12 +26,12 @@ fun NavGraph(
     ) {
         composable(NavigationScreens.POPULAR.route ) {
             Scaffold {
-            PopularScreen(viewModel = viewModel,navController)
+                MainScreen(viewModel = viewModel,navController,favoriteScreen = false)
             }
         }
         composable(NavigationScreens.FAVORITE.route ) {
             Scaffold {
-                FavoriteScreen(viewModel = viewModel,navController)
+                MainScreen(viewModel = viewModel,navController,favoriteScreen = true)
             }
         }
         composable(NavigationScreens.SORT.route){
