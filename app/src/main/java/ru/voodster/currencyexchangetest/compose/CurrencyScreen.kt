@@ -172,8 +172,8 @@ fun TopBar(
             Text(text = stringResource(id = R.string.BaseCurrency), fontSize = 20.sp)
             CurrencySelector(list = list, onSelect = { onSelectCurrency(it) }, baseCurrencyId)
         }
-        Button(onClick = { onSort() }, Modifier.weight(2f)) {
-            Icon(imageVector = Icons.Default.List, contentDescription = "")
+        Button(onClick = { onSort() }, Modifier.weight(2f).padding(5.dp)) {
+            Icon(imageVector = Icons.Default.List, contentDescription = "",Modifier.fillMaxSize())
         }
     }
 }

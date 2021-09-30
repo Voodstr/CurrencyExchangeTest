@@ -74,6 +74,7 @@ fun SortButton(
         text = text,
         Modifier
             .padding(10.dp)
+            .fillMaxWidth()
             .clickable { onClick(sortBy) },
         fontSize = 25.sp
     )
