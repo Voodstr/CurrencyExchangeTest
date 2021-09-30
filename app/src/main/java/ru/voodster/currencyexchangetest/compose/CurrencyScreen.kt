@@ -169,7 +169,7 @@ fun TopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text(text = stringResource(id = R.string.BaseCurrency), fontSize = 25.sp)
+            Text(text = stringResource(id = R.string.BaseCurrency), fontSize = 20.sp)
             CurrencySelector(list = list, onSelect = { onSelectCurrency(it) }, baseCurrencyId)
         }
         Button(onClick = { onSort() }, Modifier.weight(2f)) {

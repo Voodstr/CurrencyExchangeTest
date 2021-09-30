@@ -47,7 +47,7 @@ fun SortScreen(viewModel: CurrencyViewModel, navHostController: NavHostControlle
                     onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaAsc) })
                 SortButton(text = stringResource(id = R.string.Descending),
                     sortBy = CurrencyViewModel.SortBy.AlphaDesc,
-                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaAsc) })
+                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaDesc) })
                 Text(text = stringResource(id = R.string.byValue), fontSize = 30.sp)
                 SortButton(text = stringResource(id = R.string.Ascending),
                     sortBy = CurrencyViewModel.SortBy.ValueAsc,

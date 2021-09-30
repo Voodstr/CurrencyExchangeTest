@@ -64,8 +64,8 @@ class CurrencyViewModel : ViewModel() {
                 )
             })
 
-    private val _showedList = MutableStateFlow(currencyList) // private mutable state flow
-    val showedList = _showedList.asStateFlow() // publicly exposed as read-only state flow
+    private val _showedList = MutableStateFlow(currencyList)
+    val showedList = _showedList.asStateFlow()
 
 
     private fun update() {
@@ -99,8 +99,10 @@ class CurrencyViewModel : ViewModel() {
         }
 
     private fun updateValues(apiModel: ApiModel) {
-        basicList.forEach {
-            it.value = apiModel.rates[it.name] ?: 1f
+        if (apiModel.success){
+            basicList.forEach {
+                it.value = apiModel.rates[it.name] ?: 1f
+            }
         }
     }
 
