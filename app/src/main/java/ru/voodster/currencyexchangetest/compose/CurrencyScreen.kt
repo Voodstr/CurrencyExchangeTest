@@ -113,7 +113,7 @@ fun CurrencyItem(entity: CurrencyEntity, onAddFav: () -> Unit) {
         shape = RoundedCornerShape(10.dp)
     ) {
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth().padding(5.dp,0.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

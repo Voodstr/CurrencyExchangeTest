@@ -17,13 +17,17 @@ class CurrencyViewModel : ViewModel() {
         const val API_KEY = "db2687100a7599d1d6e9cdee1167e3de"
     }
 
+    /**
+     * Sort by - Виды сортировки
+     *
+     * @constructor Create empty Sort by
+     */
     enum class SortBy() {
         AlphaAsc,
         AlphaDesc,
         ValueAsc,
         ValuesDesc
     }
-
     private val component = DaggerCurrencyViewModelComponent.builder().build()
     private val api = component.api()
     val db = component.db()
@@ -33,7 +37,7 @@ class CurrencyViewModel : ViewModel() {
 
     var httpError = ""
 
-
+    //Список валют,
     val currencySymbols = listOf("EUR", "USD", "RUB", "GBP", "CHF", "CAD", "AED", "BYN", "KZT")
     private fun symbolsToString(): String {
         var result = ""
@@ -44,15 +48,16 @@ class CurrencyViewModel : ViewModel() {
         return result
     }
 
-
+    //Пустой лист, чтобы не показывать пустой экран, когда интернет не работае и БД не создано или пока идет загрузка
     private var mockModelList = List(currencySymbols.size) {
         CurrencyEntity(it, currencySymbols[it], 1f, false)
     }
 
-
+    //Базовый список курсов валют относительно EUR
     var basicList: MutableList<CurrencyEntity> = mockModelList.toMutableList()
     var base = basicList[0]
 
+    //Список отсортированный и расчитанный
     private val currencyList: List<CurrencyEntity>
         get() = sort(sortListBy,
             List(basicList.size) {
@@ -63,33 +68,34 @@ class CurrencyViewModel : ViewModel() {
                     basicList[it].fav,
                 )
             })
-
+    //Отображаемый список
     private val _showedList = MutableStateFlow(currencyList)
     val showedList = _showedList.asStateFlow()
 
-
+    //Обновление списка
     private fun update() {
         _showedList.update { currencyList }
         refreshState = false
     }
 
-
+    //Изменение базового значения
     fun setBase(id: Int) {
         refreshState = true
         base = basicList[id]
         update()
     }
-
+    // Добавление в избранное
     fun changeFav(id: Int) {
         basicList[id].fav = !basicList[id].fav
         update()
     }
-
+    //Измение значения сортировки
     fun setSortBy(sortBy: SortBy) {
         sortListBy = sortBy
         update()
     }
 
+    //Сортировка
     private fun sort(sortBy: SortBy, list: List<CurrencyEntity>) =
         when (sortBy) {
             SortBy.ValueAsc -> list.sortedBy { it.value }
@@ -97,7 +103,7 @@ class CurrencyViewModel : ViewModel() {
             SortBy.AlphaAsc -> list.sortedBy { it.name }
             SortBy.AlphaDesc -> list.sortedByDescending { it.name }
         }
-
+    //Обновление данных пришедших из API
     private fun updateValues(apiModel: ApiModel) {
         if (apiModel.success){
             basicList.forEach {
@@ -105,7 +111,7 @@ class CurrencyViewModel : ViewModel() {
             }
         }
     }
-
+    // Обновление по свайпу
     fun refresh() {
         refreshState = true
         api.getLatest(API_KEY, "EUR", symbolsToString())
@@ -120,13 +126,13 @@ class CurrencyViewModel : ViewModel() {
                 httpError = error.localizedMessage ?: "UnknownError"
             })
     }
-
+    // Сохранение в базу
     fun saveToDb() {
         db.queryExecutor.execute {
             db.getDao().insertAll(*basicList.toTypedArray())
         }
     }
-
+    //Получение из базы
     private fun getFromDb() {
         refreshState = true
         db.queryExecutor.execute {
@@ -142,7 +148,7 @@ class CurrencyViewModel : ViewModel() {
                 })
         }
     }
-
+    //Обновление значений пришедших из базы
     private fun updateValuesFromDb(list: List<CurrencyEntity>) {
         if (list.isNotEmpty()) {
             basicList.clear()
@@ -151,7 +157,6 @@ class CurrencyViewModel : ViewModel() {
             update()
         } else refresh()
     }
-
 
     init {
         getFromDb()

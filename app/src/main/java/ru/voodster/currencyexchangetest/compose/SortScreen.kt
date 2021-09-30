@@ -44,25 +44,21 @@ fun SortScreen(viewModel: CurrencyViewModel, navHostController: NavHostControlle
                 Text(text = stringResource(id = R.string.byAlpha), fontSize = 30.sp)
                 SortButton(text = stringResource(id = R.string.Ascending),
                     sortBy = CurrencyViewModel.SortBy.AlphaAsc,
-                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaAsc) })
+                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaAsc)
+                        navHostController.popBackStack()})
                 SortButton(text = stringResource(id = R.string.Descending),
                     sortBy = CurrencyViewModel.SortBy.AlphaDesc,
-                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaDesc) })
+                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.AlphaDesc)
+                        navHostController.popBackStack()})
                 Text(text = stringResource(id = R.string.byValue), fontSize = 30.sp)
                 SortButton(text = stringResource(id = R.string.Ascending),
                     sortBy = CurrencyViewModel.SortBy.ValueAsc,
-                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.ValueAsc) })
+                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.ValueAsc)
+                        navHostController.popBackStack()})
                 SortButton(text = stringResource(id = R.string.Descending),
                     sortBy = CurrencyViewModel.SortBy.ValuesDesc,
-                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.ValuesDesc) })
-            }
-        }
-        Box(
-            Modifier
-                .weight(2f)
-                .fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Button(onClick = { navHostController.popBackStack() }) {
-                Text(text = stringResource(id = R.string.closeSort), fontSize = 30.sp)
+                    onClick = { viewModel.setSortBy(CurrencyViewModel.SortBy.ValuesDesc)
+                    navHostController.popBackStack()})
             }
         }
     }
