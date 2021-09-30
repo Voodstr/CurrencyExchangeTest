@@ -10,14 +10,14 @@ val Teal200 = Color(0xFF03DAC5)
 
 
 
-val primaryColor = Color(0xFF80deea)
-val primaryLightColor = Color(0xFFb4ffff)
-val primaryDarkColor = Color(0xFF4bacb8)
-val primaryTextColor = Color(0xFF000000)
+val primaryColor = Color(0xFF004d40)
+val primaryLightColor = Color(0xFF39796b)
+val primaryDarkColor = Color(0xFF00251a)
+val primaryTextColor = Color(0xFFffffff)
 
-val secondaryColor = Color(0xFF29b6f6)
-val secondaryLightColor = Color(0xFF73e8ff)
-val secondaryDarkColor = Color(0xFF0086c3)
+val secondaryColor = Color(0xFF81c784)
+val secondaryLightColor = Color(0xFFb2fab4)
+val secondaryDarkColor = Color(0xFF519657)
 val secondaryTextColor = Color(0xFF000000)
 
 val dark_primaryColor = Color(0xFF112742)

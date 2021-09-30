@@ -3,4 +3,11 @@
     <string name="Popular">Popular</string>
     <string name="Favorite">Favorite</string>
     <string name="Sort">Sort</string>
+    <string name="SortBy">Sort by :</string>
+    <string name="BaseCurrency">Base currency:</string>
+    <string name="byAlpha">Name</string>
+    <string name="Ascending">Ascending</string>
+    <string name="byValue">Value</string>
+    <string name="Descending">Descending</string>
+    <string name="closeSort">Back</string>
 </resources>

@@ -1,3 +1,5 @@
+package ru.voodster.currencyexchangetest.compose
+
 import androidx.annotation.StringRes
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -16,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import ru.voodster.currencyexchangetest.CurrencyViewModel
-import ru.voodster.currencyexchangetest.compose.NavGraph
 import ru.voodster.currencyexchangetest.R
 
 @Composable
@@ -24,9 +25,9 @@ fun CurrencyExchangeApp(currencyViewModel: CurrencyViewModel) {
 
     ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
         val systemUiController = rememberSystemUiController()
+        val statusBarColor = MaterialTheme.colors.primary
         SideEffect {
-            systemUiController.isStatusBarVisible = false
-
+            systemUiController.setStatusBarColor(statusBarColor)
         }
         val navController = rememberNavController()
 
@@ -37,7 +38,7 @@ fun CurrencyExchangeApp(currencyViewModel: CurrencyViewModel) {
             bottomBar = {
                 BottomNavigationBar(
                     navController,
-                    listOf(NavigationScreens.POPULAR,NavigationScreens.FAVORITE)
+                    listOf(NavigationScreens.POPULAR, NavigationScreens.FAVORITE)
                 )
             }
         )

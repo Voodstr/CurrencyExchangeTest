@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CurrencyExchangeTest</string>
+    <string name="Popular">Популярное</string>
+    <string name="Favorite">Избранное</string>
+    <string name="Sort">Сортировка</string>
+    <string name="SortBy">Сортировать по:</string>
+    <string name="BaseCurrency">Базовая валюта:</string>
+    <string name="byAlpha">Имени</string>
+    <string name="Ascending">По возрастанию</string>
+    <string name="byValue">Значению</string>
+    <string name="Descending">По убыванию</string>
+    <string name="closeSort">Назад</string>
+</resources>

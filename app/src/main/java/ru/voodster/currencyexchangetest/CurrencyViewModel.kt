@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import ru.voodster.currencyexchangetest.api.ApiModel
-import ru.voodster.currencyexchangetest.model.CurrencyModel
+import ru.voodster.currencyexchangetest.db.CurrencyEntity
 
 const val TAG = "CurrencyViewModel"
 
@@ -17,23 +17,24 @@ class CurrencyViewModel : ViewModel() {
         const val API_KEY = "db2687100a7599d1d6e9cdee1167e3de"
     }
 
-
-    enum class SortBy(val type: String, val direction: String) {
-        AlphaAsc("Alphabet", "Ascending"),
-        AlphaDesc("Alphabet", "Descending"),
-        ValueAsc("Value", "Ascending"),
-        ValuesDesc("Value", "Descending")
+    enum class SortBy() {
+        AlphaAsc,
+        AlphaDesc,
+        ValueAsc,
+        ValuesDesc
     }
 
     private val component = DaggerCurrencyViewModelComponent.builder().build()
-    val api = component.api()
+    private val api = component.api()
     val db = component.db()
 
     var refreshState = false
     private var sortListBy = SortBy.AlphaAsc
 
+    var httpError = ""
 
-    val currencySymbols = listOf("EUR", "USD", "RUB", "GBP", "CHF", "CAD")
+
+    val currencySymbols = listOf("EUR", "USD", "RUB", "GBP", "CHF", "CAD", "AED", "BYN", "KZT")
     private fun symbolsToString(): String {
         var result = ""
         currencySymbols.forEach {
@@ -45,24 +46,33 @@ class CurrencyViewModel : ViewModel() {
 
 
     private var mockModelList = List(currencySymbols.size) {
-        CurrencyModel(currencySymbols[it], (5..100).random().toFloat(), false, it)
+        CurrencyEntity(it, currencySymbols[it], 1f, false)
     }
-    var basicList: MutableList<CurrencyModel> = mockModelList.toMutableList()
+
+
+    var basicList: MutableList<CurrencyEntity> = mockModelList.toMutableList()
     var base = basicList[0]
 
-    val showedList: List<CurrencyModel>
+    private val currencyList: List<CurrencyEntity>
         get() = sort(sortListBy,
             List(basicList.size) {
-                CurrencyModel(
+                CurrencyEntity(
+                    basicList[it].id,
                     basicList[it].name,
                     basicList[it].value / base.value,
                     basicList[it].fav,
-                    basicList[it].id
                 )
             })
 
-    private val _currencyList = MutableStateFlow(showedList) // private mutable state flow
-    val currencyList = _currencyList.asStateFlow() // publicly exposed as read-only state flow
+    private val _showedList = MutableStateFlow(currencyList) // private mutable state flow
+    val showedList = _showedList.asStateFlow() // publicly exposed as read-only state flow
+
+
+    private fun update() {
+        _showedList.update { currencyList }
+        refreshState = false
+    }
+
 
     fun setBase(id: Int) {
         refreshState = true
@@ -80,7 +90,7 @@ class CurrencyViewModel : ViewModel() {
         update()
     }
 
-    private fun sort(sortBy: SortBy, list: List<CurrencyModel>) =
+    private fun sort(sortBy: SortBy, list: List<CurrencyEntity>) =
         when (sortBy) {
             SortBy.ValueAsc -> list.sortedBy { it.value }
             SortBy.ValuesDesc -> list.sortedByDescending { it.value }
@@ -88,35 +98,61 @@ class CurrencyViewModel : ViewModel() {
             SortBy.AlphaDesc -> list.sortedByDescending { it.name }
         }
 
-    fun updateValues(apiModel: ApiModel) {
+    private fun updateValues(apiModel: ApiModel) {
         basicList.forEach {
-            Log.d(TAG,"before = ${it.value}")
             it.value = apiModel.rates[it.name] ?: 1f
-            Log.d(TAG,"after = ${it.value}")
         }
     }
 
     fun refresh() {
-        refreshState =true
-        api.getLatest(API_KEY, currencySymbols[0], symbolsToString())
+        refreshState = true
+        api.getLatest(API_KEY, "EUR", symbolsToString())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .subscribe({ result ->
                 Log.d(TAG, "apiModel: $result")
                 updateValues(result)
+                saveToDb()
                 update()
             }, { error ->
-                //httpError = error.localizedMessage ?: "UnknownError"
-                Log.d(TAG, "error: ${error.localizedMessage}")
+                httpError = error.localizedMessage ?: "UnknownError"
             })
     }
 
-    private fun update() {
-        _currencyList.update { showedList }
-        refreshState = false
+    fun saveToDb() {
+        db.queryExecutor.execute {
+            db.getDao().insertAll(*basicList.toTypedArray())
+        }
     }
 
+    private fun getFromDb() {
+        refreshState = true
+        db.queryExecutor.execute {
+            db.getDao().getCurrencyList()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe({ result ->
+                    Log.d(TAG, "getFromDb: $result")
+                    updateValuesFromDb(result)
+                }, { error ->
+                    refresh()
+                    httpError = error.localizedMessage ?: "UnknownError"
+                })
+        }
+    }
+
+    private fun updateValuesFromDb(list: List<CurrencyEntity>) {
+        if (list.isNotEmpty()) {
+            basicList.clear()
+            basicList.addAll(list)
+            setBase(0)
+            update()
+        } else refresh()
+    }
+
+
     init {
+        getFromDb()
         refresh()
     }
 }

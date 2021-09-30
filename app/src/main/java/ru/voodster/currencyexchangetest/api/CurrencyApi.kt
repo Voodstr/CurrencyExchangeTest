@@ -12,10 +12,4 @@ interface CurrencyApi {
         @Query("symbols") symbols:String
     ): Single<ApiModel>
 
-    @GET("/latest")
-    fun getLatestFlow(
-        @Query("access_key")access_key:String,
-        @Query("base") base:String,
-        @Query("symbols") symbols:String
-    ): Single<ApiModel>
 }

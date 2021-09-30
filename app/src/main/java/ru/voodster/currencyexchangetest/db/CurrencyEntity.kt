@@ -10,13 +10,8 @@ import kotlinx.parcelize.Parcelize
 @Entity(tableName = "CurrencyTable")
 @Parcelize
 data class CurrencyEntity(
-    @PrimaryKey(autoGenerate = false) val id:String,
-    @ColumnInfo(name = "value") val value:Float,
-    @ColumnInfo(name = "fav") val fav:Boolean
-): Parcelable
-
-@Entity(tableName = "AdditionalData")
-@Parcelize
-data class AdditionalData(
-    @PrimaryKey(autoGenerate = false) val base:String
-):Parcelable
+    @PrimaryKey(autoGenerate = false) var id: Int,
+    @ColumnInfo(name = "name") var name: String,
+    @ColumnInfo(name = "value") var value: Float,
+    @ColumnInfo(name = "fav") var fav: Boolean
+) : Parcelable

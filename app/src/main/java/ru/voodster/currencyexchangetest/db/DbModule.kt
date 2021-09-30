@@ -1,6 +1,8 @@
 package ru.voodster.currencyexchangetest.db
 
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import ru.voodster.currencyexchangetest.App
@@ -8,9 +10,7 @@ import javax.inject.Singleton
 
 @Module
 class DbModule {
-
-
-    companion object{
+    companion object {
         const val DATABASE_NAME = "currency.db"
     }
 
@@ -21,6 +21,8 @@ class DbModule {
             App.instance!!.applicationContext,
             CurrencyRoomDatabase::class.java,
             DATABASE_NAME
-        ).fallbackToDestructiveMigration().build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 }

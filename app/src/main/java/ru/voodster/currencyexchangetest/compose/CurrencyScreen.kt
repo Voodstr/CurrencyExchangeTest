@@ -1,17 +1,20 @@
 package ru.voodster.currencyexchangetest.compose
 
 
-import NavigationScreens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,16 +23,22 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.voodster.currencyexchangetest.CurrencyViewModel
-import ru.voodster.currencyexchangetest.model.CurrencyModel
+import ru.voodster.currencyexchangetest.R
+import ru.voodster.currencyexchangetest.db.CurrencyEntity
 import ru.voodster.currencyexchangetest.ui.theme.CurrencyExchangeTestTheme
 
-const val TAG = "CurrencyScreen"
 
 @Composable
-fun MainScreen(viewModel: CurrencyViewModel, navHostController: NavHostController,favoriteScreen: Boolean) {
-    val list = viewModel.currencyList.collectAsState()
+fun MainScreen(
+    viewModel: CurrencyViewModel,
+    navHostController: NavHostController,
+    favoriteScreen: Boolean
+) {
+    val list = viewModel.showedList.collectAsState()
     CurrencyScreen(
-        viewModel.currencySymbols, if(favoriteScreen){list.value.filter { it.fav }}else list.value,
+        viewModel.currencySymbols, if (favoriteScreen) {
+            list.value.filter { it.fav }
+        } else list.value,
         onSort = {
             navHostController.navigate(NavigationScreens.SORT.route)
         },
@@ -48,7 +57,7 @@ fun MainScreen(viewModel: CurrencyViewModel, navHostController: NavHostControlle
 
 @Composable
 fun CurrencyScreen(
-    currencyList: List<String>, contentList: List<CurrencyModel>,
+    currencyList: List<String>, contentList: List<CurrencyEntity>,
     onSort: () -> Unit, onAddFav: (id: Int) -> Unit,
     onSelectBaseCurrency: (id: Int) -> Unit, baseCurrencyId: Int,
     onRefresh: () -> Unit, isRefreshing: Boolean
@@ -81,7 +90,7 @@ fun CurrencyScreen(
 
 @Composable
 fun CurrencyList(
-    list: List<CurrencyModel>, onClickFav: (id: Int) -> Unit,
+    list: List<CurrencyEntity>, onClickFav: (id: Int) -> Unit,
     refresh: Boolean, onRefresh: () -> Unit
 ) {
     SwipeRefresh(
@@ -90,30 +99,40 @@ fun CurrencyList(
     {
         LazyColumn(Modifier.fillMaxWidth()) {
             list.forEach {
-                item { CurrencyItem(model = it, onAddFav = { onClickFav(it.id) }) }
+                item { CurrencyItem(entity = it, onAddFav = { onClickFav(it.id) }) }
             }
         }
     }
 }
 
 @Composable
-fun CurrencyItem(model: CurrencyModel, onAddFav: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Box {
-            Text(text = model.name, textAlign = TextAlign.Center, fontSize = 30.sp)
-        }
-        Box {
-            Text(
-                text = String.format("%.2f", model.value),
-                textAlign = TextAlign.Left,
-                fontSize = 30.sp
-            )
-        }
-        Box {
-            var click by remember { mutableStateOf(model.fav) }
-            ClickFavIcon(fav = click) {
-                onAddFav()
-                click = !click
+fun CurrencyItem(entity: CurrencyEntity, onAddFav: () -> Unit) {
+    Surface(
+        elevation = 4.dp,
+        modifier = Modifier.padding(3.dp),
+        shape = RoundedCornerShape(10.dp)
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box {
+                Text(text = entity.name, textAlign = TextAlign.Center, fontSize = 50.sp)
+            }
+            Box {
+                Text(
+                    text = String.format("%.3f", entity.value),
+                    textAlign = TextAlign.Left,
+                    fontSize = 30.sp
+                )
+            }
+            Box {
+                var click by remember { mutableStateOf(entity.fav) }
+                ClickFavIcon(fav = click) {
+                    onAddFav()
+                    click = !click
+                }
             }
         }
     }
@@ -128,7 +147,10 @@ fun addFav(fav: Boolean) = if (fav) {
 @Composable
 fun ClickFavIcon(fav: Boolean, onAddFav: () -> Unit) {
     val image = addFav(fav)
-    Icon(imageVector = image, "", Modifier.clickable { onAddFav() })
+    Icon(imageVector = image, "",
+        Modifier
+            .size(40.dp)
+            .clickable { onAddFav() })
 }
 
 
@@ -140,11 +162,18 @@ fun TopBar(
     onSort: () -> Unit
 ) {
     TopAppBar(backgroundColor = MaterialTheme.colors.primaryVariant) {
-        Box(Modifier.weight(8f)) {
+        Row(
+            Modifier
+                .weight(8f)
+                .padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Text(text = stringResource(id = R.string.BaseCurrency), fontSize = 25.sp)
             CurrencySelector(list = list, onSelect = { onSelectCurrency(it) }, baseCurrencyId)
         }
         Button(onClick = { onSort() }, Modifier.weight(2f)) {
-            Text(text = "SORT", color = MaterialTheme.colors.onPrimary)
+            Icon(imageVector = Icons.Default.List, contentDescription = "")
         }
     }
 }
@@ -162,7 +191,7 @@ fun CurrencySelector(
             .clickable { // Anchor view
                 expanded = !expanded
             }) {
-        Text(text = selectedString)
+        Text(text = selectedString, color = MaterialTheme.colors.onPrimary, fontSize = 30.sp)
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             list.forEach {
                 DropdownMenuItem(onClick = {
@@ -180,18 +209,21 @@ fun CurrencySelector(
 
 @Composable
 fun SelectableItem(name: String) {
-    Text(text = name, color = MaterialTheme.colors.onPrimary, fontSize = 20.sp)
+    Text(text = name, color = MaterialTheme.colors.onPrimary, fontSize = 30.sp)
 }
 
 
 @Preview
 @Composable
 fun CurrencyScreenPreview() {
-    val viewModel = CurrencyViewModel()
+    val currencySymbols = listOf("EUR", "USD", "RUB", "GBP", "CHF", "CAD")
+    val mockModelList = List(currencySymbols.size) {
+        CurrencyEntity(it, currencySymbols[it], (5..100).random().toFloat(), false)
+    }
     CurrencyExchangeTestTheme {
         CurrencyScreen(
-            viewModel.currencySymbols,
-            viewModel.showedList,
+            currencySymbols,
+            mockModelList,
             onSort = {},
             onAddFav = {},
             onSelectBaseCurrency = {},

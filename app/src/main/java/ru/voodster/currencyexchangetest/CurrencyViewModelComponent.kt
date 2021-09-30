@@ -7,9 +7,9 @@ import ru.voodster.currencyexchangetest.db.CurrencyRoomDatabase
 import ru.voodster.currencyexchangetest.db.DbModule
 import javax.inject.Singleton
 
-@Component(modules = [ApiModule::class,DbModule::class])
+@Component(modules = [ApiModule::class, DbModule::class])
 @Singleton
 interface CurrencyViewModelComponent {
-    fun api():CurrencyApi
-    fun db():CurrencyRoomDatabase
+    fun api(): CurrencyApi
+    fun db(): CurrencyRoomDatabase
 }
